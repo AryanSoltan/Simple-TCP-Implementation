@@ -39,7 +39,7 @@ void Host::run()
 		{
 			read(STDIN_FILENO, buf, sizeof(buf));
 			std::string s_tmp(buf);
-			send(s_tmp);
+			send_data(s_tmp);
 		}
 		else 
 		{
@@ -48,7 +48,7 @@ void Host::run()
 	}
 }
 
-void Host::send(std::string command)
+void Host::send_data(std::string command)
 {
 	std::string path;
 	byte reciver;
@@ -57,7 +57,63 @@ void Host::send(std::string command)
 	std::istringstream in(command);
 	in >> path >> reciver >> window_size >> packet_size;
 
+	struct timeval tv;
+	tv.tv_sec = 1;
+	tv.tv_usec = 0;
+	setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
+
 	std::ifstream file(path);
 	std::string contents((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
-	char
+	std::vector<Packet> packets = PacketTool::creat_packets(contents, packet_size, reciver, DATA_TYPE, name);
+
+	send_packets(packets, 0, window_size);
+}
+
+void Host::send_packets(const std::vector<Packet>& packets, int cur_seq_num, int window_size)
+{
+	int last = cur_seq_num;
+	char buf[MAX_DATA_SIZE];
+	while(last < std::min((int) packets.size(), cur_seq_num + window_size))
+	{
+		Msg msg(packets[last++]);
+		send(fd, &(msg.msg), msg.len, 0);
+	}
+
+	std::map<byte, bool> acks;
+
+	while (cur_seq_num < packets.size())
+	{
+		int len = recv(fd, buf, MAX_DATA_SIZE, 0);
+		if (len == EAGAIN)
+		{
+			send_packets(packets, cur_seq_num, window_size);
+			return;
+		}
+		std::vector<Packet> res = PacketTool::parse_packet(buf, len);
+		for (auto packet : res)
+			if (packet.type == ACK_TYPE)
+				acks[packet.seq_num] = true;
+
+		while (cur_seq_num < last)
+		{
+			if (acks[cur_seq_num])
+			{
+				acks[cur_seq_num] = false;
+				cur_seq_num++;
+			}
+			else
+				break;
+		}
+
+		while(last < std::min((int) packets.size(), cur_seq_num + window_size))
+		{
+			Msg msg(packets[last++]);
+			send(fd, &(msg.msg), msg.len, 0);
+		}
+	}
+}
+
+void Host::recive()
+{
+	
 }

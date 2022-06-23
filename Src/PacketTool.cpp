@@ -1,5 +1,17 @@
 #include "../Includes/PacketTool.hpp"
 
+Packet::Packet(byte reciver, byte type, byte sender, byte seq_num)
+: reciver(reciver),
+type(type),
+sender(sender),
+seq_num(seq_num)
+{
+}
+
+Packet::Packet()
+{
+}
+
 Msg::Msg (Packet packet)
 {
 	len = 4 + packet.data_size + 1;
@@ -7,7 +19,12 @@ Msg::Msg (Packet packet)
 		if (packet.data[i] == 0 || packet.data[i] == 1)
 			len++;
 	msg = new char[len];
-	int cnt = 0;
+	msg[0] = packet.reciver;
+	msg[1] = packet.type;
+	msg[2] = packet.sender;
+	msg[3] = packet.seq_num;
+
+	int cnt = 4;
 	for (int i = 0; i < packet.data_size; i++)
 	{
 		if (packet.data[i] == 0 || packet.data[i] == 1)
@@ -24,20 +41,15 @@ Msg::~Msg ()
 
 Packet PacketTool::get_top_packet(char msg[], int& cur_index, int len)
 {
-	Packet packet;
-	packet.reciver = msg[cur_index++];
-	packet.type = msg[cur_index++];
-	packet.sender = msg[cur_index++];
-	packet.seq_num = msg[cur_index++];
+	Packet packet(msg[cur_index], msg[cur_index+1], msg[cur_index+2], msg[cur_index+3]);
+	cur_index += 4;
 	packet.data_size = 0;
 	while(cur_index < len)
 	{
-		if (msg[cur_index] == 0)
-			break;
 		if (msg[cur_index] == 1)
 		{
 			cur_index++;
-			packet.data[packet.data_size ++] = msg[cur_index++];
+			packet.data[packet.data_size++] = msg[cur_index++];
 		}
 		else if (msg[cur_index] == 0)
 		{
@@ -57,4 +69,38 @@ std::vector<Packet> PacketTool::parse_packet(char msg[], int len)
 	while (cur_index < len)
 		packets.push_back(get_top_packet(msg, cur_index, len));
 	return packets;
+}
+
+std::vector<Packet> PacketTool::creat_packets(char data[], int len, int packet_size, byte reciver,
+		byte type, byte sender)
+{
+	int last = 0;
+	byte seq_num = 0;
+	std::vector<Packet> packets;
+
+	while (last < len)
+	{
+		packets.push_back(creat_packet(data, last, std::min(len, last + packet_size), reciver, type, sender, seq_num++));
+		last = std::min(len, last + packet_size);
+	}
+
+	return packets;
+}
+
+std::vector<Packet> PacketTool::creat_packets(std::string data, int packet_size, byte reciver,
+		byte type, byte sender)
+{
+	int len = data.size() + 1;
+	char chr[len];
+	std::strcpy(chr, data.c_str());
+	return creat_packets(chr, len, packet_size, reciver, type, sender);
+}
+
+Packet PacketTool::creat_packet(char data[], int l, int r, byte reciver, byte type, byte sender, byte seq_num)
+{
+	Packet packet(reciver, type, sender, seq_num);
+	packet.data_size = 0;
+	for (int i = l; i < r; i++)
+		packet.data[packet.data_size++] = data[i];
+	return packet;
 }

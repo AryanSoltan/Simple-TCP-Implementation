@@ -5,6 +5,8 @@
 
 struct Packet
 {
+	Packet(byte reciver, byte type, byte sender, byte seq_num);
+	Packet();
 	byte reciver;
 	byte type;
 	byte sender;
@@ -27,8 +29,11 @@ class PacketTool
 	public:
 		static Packet get_top_packet(char msg[], int& cur_index, int len);
 		static std::vector<Packet> parse_packet(char msg[], int len);
-		static std::vector<Packet> creat_packets(char data[], int len, int packet_size, byte reciver);
-		static Packet creat_packet(char data[], int len, byte reciver);
+		static std::vector<Packet> creat_packets(char data[], int len, int packet_size, byte reciver, byte type,
+				byte sender);
+		static std::vector<Packet> creat_packets(std::string data, int packet_size, byte reciver, byte type,
+				byte sender);
+		static Packet creat_packet(char data[], int l, int r, byte reciver, byte type, byte sender, byte seq_num);
 };
 
 #endif
