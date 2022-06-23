@@ -21,8 +21,7 @@
 #define DATA_BUF_SIZE 4096
 #define MAX_DATA_SIZE 16384
 #define MAX_CONNECTIONS 40
-#define COMMAND_PORT 8000
-#define DATA_PORT 8001
+#define PORT 8000
 
 enum HostState{waiting, reciving, sending};
 

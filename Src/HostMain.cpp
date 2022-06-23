@@ -8,7 +8,7 @@ int main(int argc, char* argv[])
 		return 0;
 	}
 	std::string host_name(argv[1]);
-	Host host(host_name);
+	Host host((byte)stoi(host_name));
 	host.run();
 	return 0;
 }

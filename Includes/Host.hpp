@@ -1,15 +1,21 @@
+#ifndef _Host_hpp_
+#define _Host_hpp_
+
 #include "PacketTool.hpp"
 #include "SocketTool.hpp"
 
 class Host
 {
 	public:
-		Host(std::string name);
+		Host(byte name);
 		void run();
 		void recive();
-		void send();
+		void send(std::string command);
 
 	private:
-		std::string name;
+		byte name;
 		HostState state;
+		int fd;
 };
+
+#endif
