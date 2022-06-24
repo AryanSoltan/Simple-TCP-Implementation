@@ -133,9 +133,8 @@ void Host::recive(std::string data)
 		if (ack < 0)
 			continue;
 		byte ret = (ack % 256);
-		char c[2];
-		c[0] = ret;
-		c[1] = 0;
-		send(fd, c, 2, 0);
+		Packet pkt(packet.sender, ACK_TYPE, packet.reciver, ret);
+		Msg msg(pkt);
+		send(fd, msg.msg, msg.len, 0);
 	}
 }
