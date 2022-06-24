@@ -21,10 +21,13 @@ int DataReciver::add_packet(Packet packet)
 			else
 				tmp_packet_seq_num += 256;
 		}
-		i (tmp)
+		if (tmp_packet_seq_num < tmp_seq_num)
+			return packet.seq_num;
+		else 
+			return -1;
 	}
 	
-	if (packet.data[0] == 0)
+	if (packet.data_size == 0)
 	{
 		std::ofstream file("files/from " + std::to_string(senders_name) + " to " + std::to_string(recivers_name)
 				+ std::to_string(file_number));
@@ -35,4 +38,12 @@ int DataReciver::add_packet(Packet packet)
 		seq_num = 0;
 		return packet.seq_num;
 	}
+
+	recived_data += std::string(packet.data);
+	return packet.seq_num;
+}
+
+byte DataReciver::get_senders_name()
+{
+	return senders_name;
 }

@@ -13,9 +13,10 @@ class DataReciver
 		int file_number;
 		
 	public:
+		DataReciver(byte recivers_name, byte senders_name);
 		int add_packet(Packet packet);
 		void creat_file();
-		DataReciver(byte recivers_name, byte senders_name);
+		byte get_senders_name();
 };
 
 #endif

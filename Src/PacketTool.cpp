@@ -4,11 +4,13 @@ Packet::Packet(byte reciver, byte type, byte sender, byte seq_num)
 : reciver(reciver),
 type(type),
 sender(sender),
-seq_num(seq_num)
+seq_num(seq_num),
+data_size(0)
 {
 }
 
 Packet::Packet()
+: data_size(0)
 {
 }
 
@@ -71,6 +73,23 @@ std::vector<Packet> PacketTool::parse_packet(char msg[], int len)
 	return packets;
 }
 
+std::vector<Packet> PacketTool::creat_packets(std::string data, int packet_size, byte reciver,
+		byte type, byte sender)
+{
+	int len = data.size() + 1;
+	char chr[len];
+	std::strcpy(chr, data.c_str());
+	return creat_packets(chr, len, packet_size, reciver, type, sender);
+}
+
+std::vector<Packet> PacketTool::parse_packet(std::string data)
+{
+	int len = data.size() + 1;
+	char chr[len];
+	std::strcpy(chr, data.c_str());
+	return parse_packet(chr, len);
+}
+
 std::vector<Packet> PacketTool::creat_packets(char data[], int len, int packet_size, byte reciver,
 		byte type, byte sender)
 {
@@ -83,17 +102,8 @@ std::vector<Packet> PacketTool::creat_packets(char data[], int len, int packet_s
 		packets.push_back(creat_packet(data, last, std::min(len, last + packet_size), reciver, type, sender, seq_num++));
 		last = std::min(len, last + packet_size);
 	}
-
+	packets.push_back(Packet(reciver, type, sender, seq_num++));
 	return packets;
-}
-
-std::vector<Packet> PacketTool::creat_packets(std::string data, int packet_size, byte reciver,
-		byte type, byte sender)
-{
-	int len = data.size() + 1;
-	char chr[len];
-	std::strcpy(chr, data.c_str());
-	return creat_packets(chr, len, packet_size, reciver, type, sender);
 }
 
 Packet PacketTool::creat_packet(char data[], int l, int r, byte reciver, byte type, byte sender, byte seq_num)

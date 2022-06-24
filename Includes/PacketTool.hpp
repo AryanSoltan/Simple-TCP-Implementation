@@ -29,6 +29,7 @@ class PacketTool
 	public:
 		static Packet get_top_packet(char msg[], int& cur_index, int len);
 		static std::vector<Packet> parse_packet(char msg[], int len);
+		static std::vector<Packet> parse_packet(std::string);
 		static std::vector<Packet> creat_packets(char data[], int len, int packet_size, byte reciver, byte type,
 				byte sender);
 		static std::vector<Packet> creat_packets(std::string data, int packet_size, byte reciver, byte type,

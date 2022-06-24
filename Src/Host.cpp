@@ -43,7 +43,9 @@ void Host::run()
 		}
 		else 
 		{
-			recive();
+			read(STDIN_FILENO, buf, sizeof(buf));
+			std::string s_tmp(buf);
+			recive(s_tmp);
 		}
 	}
 }
@@ -65,7 +67,6 @@ void Host::send_data(std::string command)
 	std::ifstream file(path);
 	std::string contents((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
 	std::vector<Packet> packets = PacketTool::creat_packets(contents, packet_size, reciver, DATA_TYPE, name);
-
 	send_packets(packets, 0, window_size);
 }
 
@@ -113,7 +114,28 @@ void Host::send_packets(const std::vector<Packet>& packets, int cur_seq_num, int
 	}
 }
 
-void Host::recive()
+void Host::recive(std::string data)
 {
-	
+	std::vector<Packet> packets = PacketTool::parse_packet(data);
+	int ind;
+	int ack;
+	for (auto packet : packets)
+	{
+		if (has_reciver.find(packet.sender) == has_reciver.end())
+		{
+			has_reciver[packet.sender] = data_recivers.size();
+			data_recivers.push_back(DataReciver(name, packet.sender));
+		}
+
+
+		ind = has_reciver[packet.sender];
+		ack = data_recivers[ind].add_packet(packet);
+		if (ack < 0)
+			continue;
+		byte ret = (ack % 256);
+		char c[2];
+		c[0] = ret;
+		c[1] = 0;
+		send(fd, c, 2, 0);
+	}
 }

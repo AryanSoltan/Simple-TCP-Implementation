@@ -3,13 +3,14 @@
 
 #include "PacketTool.hpp"
 #include "SocketTool.hpp"
+#include "DataReciver.hpp"
 
 class Host
 {
 	public:
 		Host(byte name);
 		void run();
-		void recive();
+		void recive(std::string data);
 		void send_data(std::string command);
 		void send_packets(const std::vector<Packet>& packets, int l, int window_size);
 
@@ -17,6 +18,8 @@ class Host
 		byte name;
 		HostState state;
 		int fd;
+		std::vector<DataReciver> data_recivers;
+		std::map<byte, int> has_reciver;
 };
 
 #endif
