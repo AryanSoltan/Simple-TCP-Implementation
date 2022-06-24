@@ -3,7 +3,7 @@
 
 int SocketTools::creat_socket()
 {
-	int new_socket = socket(PF_INET, SOCK_DGRAM, 0);
+	int new_socket = socket(PF_INET, SOCK_STREAM, 0);
 	if (new_socket < 0)
 	{
 		std::cerr << "Fail to create socket" << std::endl;
@@ -70,11 +70,11 @@ int SocketTools::connect_to_server(unsigned short port)
 
 	if(connect(new_socket, (struct sockaddr*) &sock_addr, sizeof(sock_addr)) < 0)
 	{
-        std::cerr << "Error in connecting to server" << std::endl;
+        std::cerr << "Error in connecting to Router" << std::endl;
 		exit(1);
 	}
     else
-    	std::cout << "connected to server" << std::endl;
+    	std::cout << "connected to Router" << std::endl;
 
     return new_socket;
 }

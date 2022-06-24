@@ -38,7 +38,7 @@ Msg::Msg (Packet packet)
 
 Msg::~Msg ()
 {
-	delete [] msg;
+	// delete [] msg;
 }
 
 Packet PacketTool::get_top_packet(char msg[], int& cur_index, int len)

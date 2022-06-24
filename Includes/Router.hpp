@@ -17,18 +17,14 @@ class Router
 
         void add_new_packets(std::vector<Packet> new_packets);
         int accept_new_request(int master_socket);
-        int find_host(char* host_name);
-		char** packet_queue;
+        int find_host(byte host_name);
 		int len_queue;
-        int head;
-		int num_packets;
-		int server_fd;
-        int not_sent;
-        char** reciver;
+		int router_fd;
 		SocketTools socket_tools;
 		std::vector<int> hosts;
 		std::vector<int>number_messages_from_host;
-		std::vector<char*> name_host;
+		byte name_host[MAX_CONNECTIONS];
+		std::queue<Packet> router_queue;
 };
 
 #endif

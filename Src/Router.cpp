@@ -5,35 +5,37 @@
 Router::Router(int len_input)
 {
 	len_queue = len_input;
-	packet_queue = (char**)malloc(sizeof(char*) * len_input);
-	head = 0;
-	not_sent = 0;
+
+	router_fd = socket_tools.creat_socket();
+	socket_tools.bind_socket(router_fd, PORT);
+	socket_tools.listen_socket(router_fd);
+	socket_tools.set_socket_options(router_fd);
 }
 
-int Router::find_host(char* host_name)
+int Router::find_host(byte host_name)
 {
-	for(int i = 0; i < name_host.size(); i++)
+	for(int i = 0; i < hosts.size(); i++)
 	{
-		if(strcmp(host_name, name_host[i]))
+		if(name_host[i] == host_name)
 		{
 			return hosts[i];
 		}
 	}
+	return -1;
 }
 
 void Router::run_send_thread()
 {
 	while(true)
 	{
-		if(not_sent)
+		if(router_queue.size())
 		{
-			int indx = head - not_sent + 1;
-			if(indx < 0)
-				indx += len_queue;
-			char* msg_str = packet_queue[indx];
-			int fd_need = find_host(reciver[indx]);		
-			send(fd_need, &fd_need, sizeof(msg_str), 0);
-			not_sent--;
+			Packet packet = router_queue.front();
+			router_queue.pop();
+
+			int fd_need = find_host(packet.reciver);
+			Msg msg(packet);
+			send(fd_need, msg.msg, msg.len, 0);
 		}
 	}	
 }
@@ -46,26 +48,26 @@ int Router::accept_new_request(int master_socket)
 
 	int new_socket;
 	if((new_socket = accept(master_socket, (struct sockaddr *) &caddr, (unsigned int *) caddrlen)) < 0){
-		std::cerr << "New Host connection failed." << std::endl;
+		std::cout << "New Host connection failed." << std::endl;
 		return 1;
 	}
 	else
+	{
 		std::cout << "Host accepted" << std::endl;
+	}	
 
 	return new_socket;
 }
 
 void Router::add_new_packets(std::vector<Packet> new_packets)
 {
-	for(int i = 0; i < new_packets.size(); i++)
+	for(auto packet : new_packets)
 	{
-		char* msg_now;
-		Msg msg = Msg(new_packets[i]);
-		msg_now = msg.msg;
-		packet_queue[head % len_queue] = msg_now;
-		strcpy(reciver[head % len_queue], (char*) new_packets[i].reciver);
-		head++;
-		not_sent++;
+		if (router_queue.size() < len_queue)
+		{
+			std::cerr << "Packet added, sender, reciver, seqnum : "<< (int)packet.sender <<" " <<(int)packet.reciver <<" " <<(int)packet.seq_num<<std::endl;
+			router_queue.push(packet);
+		}
 	}
 }
 
@@ -74,24 +76,24 @@ void Router::run_recv_thread()
 	fd_set master_set, working_set;
 	char buf[LEN_PACKET];
 
-	int server_fd = 0;
-	int max_fd = server_fd;
+	int max_fd = router_fd;
 
 	FD_ZERO(&master_set);
-	FD_SET(server_fd, &master_set);
+	FD_SET(router_fd, &master_set);
 
 	while(true)
 	{
 		working_set = master_set;
 		if (select(max_fd + 1, &working_set, NULL, NULL, NULL) == -1)
 		{
-			std::cerr << "Select failed" << std::endl;
+			std::cout << "Select failed" << std::endl;
 			exit(-1);
 		}
 
-		if (FD_ISSET(server_fd, &working_set))
+		if (FD_ISSET(router_fd, &working_set))
 		{
-			int new_fd = accept_new_request(server_fd);
+			int new_fd = accept_new_request(router_fd);
+
 			hosts.push_back(new_fd);
 			number_messages_from_host.push_back(0);
 			max_fd = std::max(max_fd, new_fd);
@@ -108,7 +110,7 @@ void Router::run_recv_thread()
 				if(msg_size <= 0)
 				{
 					if(msg_size < 0)
-						std::cerr << "Message is broken" << std::endl;
+						std::cout << "Message is broken" << std::endl;
 					else if(msg_size == 0)
 					{
 						std::cout << "A client quits" << std::endl;
@@ -119,12 +121,20 @@ void Router::run_recv_thread()
 				}
 				else{
 					buf[msg_size] = '\0';
+
 					if(!number_messages_from_host[i])
 					{
-						strcpy(name_host[i], buf);
+						name_host[i] = buf[0];
 					}
 					else 
 					{
+						std::cerr << "msg lenght : " << msg_size << std::endl;
+						std::cerr << "int first packet : reciver, sender: " <<  (int)(int)(unsigned)buf[0] << " " <<  (int)(unsigned char)buf[2] << " " << std::endl;
+						std::cerr <<"show________________" << std::endl;
+						for (int i = 0; i < msg_size; i++)
+							std::cerr << buf[i];
+						std::cerr <<"______________________" << std::endl;
+						
 						std:: vector<Packet> new_packets = PacketTool::parse_packet(buf, msg_size);
 						add_new_packets(new_packets);
 					}
@@ -137,8 +147,24 @@ void Router::run_recv_thread()
 
 void Router::run_all()
 {
+	pthread_t threads[2];
+	int ret_code;
+
 	std::thread thread1(&Router::run_recv_thread, this);
 	std::thread thread2(&Router::run_send_thread, this);
 	thread1.join();
 	thread2.join();
+}
+
+int main(int argc, char* argv[])
+{
+	if (argc != 2)
+	{
+		std::cout << "Wring number of Argumants for runnig Router" << std::endl;
+		return 0;
+	}
+	std::string queue_size(argv[1]);
+
+	Router router(stoi(queue_size));
+	router.run_all();
 }

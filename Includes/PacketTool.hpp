@@ -1,5 +1,5 @@
 #ifndef _PacketTool_hpp_
-#define _PacketTool_hpp
+#define _PacketTool_hpp_
 
 #include "IncludesAndDefines.hpp"
 

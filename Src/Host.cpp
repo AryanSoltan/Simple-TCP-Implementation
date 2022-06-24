@@ -9,7 +9,7 @@ void Host::run()
 {
 	SocketTools socket_tools;
 	fd = socket_tools.connect_to_server(PORT);
-	std::cout << "Connected to Router";
+	std::cout << "Connected to Router" << std::endl;
 	char buf[MAX_DATA_SIZE];
 	buf[0] =  name;
 	buf[1] = 0;
@@ -35,6 +35,7 @@ void Host::run()
 			std::cout << "Select failed while waiting" << std::endl;
 			return;
 		}
+
 		if (FD_ISSET(STDIN_FILENO, &working_set))
 		{
 			read(STDIN_FILENO, buf, sizeof(buf));
@@ -43,8 +44,9 @@ void Host::run()
 		}
 		else 
 		{
-			read(STDIN_FILENO, buf, sizeof(buf));
+			read(fd, buf, sizeof(buf));
 			std::string s_tmp(buf);
+			std::cout << "__________\n" << s_tmp.size() << std::endl << s_tmp<<std::endl << "_________________\n";
 			std::cout << "Start Reciving" << std::endl;
 			recive(s_tmp);
 			std::cout << "End of Reciving" << std::endl;
@@ -55,11 +57,13 @@ void Host::run()
 void Host::send_data(std::string command)
 {
 	std::string path;
+	int tmp;
 	byte reciver;
 	int window_size;
 	int packet_size;
 	std::istringstream in(command);
-	in >> path >> reciver >> window_size >> packet_size;
+	in >> path >> tmp >> window_size >> packet_size;
+	reciver = tmp;
 
 	struct timeval tv;
 	tv.tv_sec = 1;
@@ -67,7 +71,9 @@ void Host::send_data(std::string command)
 	setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
 
 	std::ifstream file(path);
-	std::string contents((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+	std::ostringstream oss;
+    oss << file.rdbuf();
+	std::string contents = oss.str();
 	std::vector<Packet> packets = PacketTool::creat_packets(contents, packet_size, reciver, DATA_TYPE, name);
 
 	auto start = std::chrono::high_resolution_clock::now();
@@ -90,23 +96,41 @@ void Host::send_packets(const std::vector<Packet>& packets, int cur_seq_num, int
 	while(last < std::min((int) packets.size(), cur_seq_num + window_size))
 	{
 		Msg msg(packets[last++]);
-		send(fd, &(msg.msg), msg.len, 0);
+		std::cerr << "Packet " << (int)packets[last-1].seq_num << " sent" << std::endl;
+		std::cerr <<"sender, reciver, seqnum: " << (int)packets[last-1].sender << " " << (int)packets[last-1].reciver << " " << (int)packets[last-1].seq_num << std::endl;
+		std::cerr << "msg sender reciver : " <<  (int)msg.msg[2] << " " << (int)msg.msg[0] << std::endl;
+		std::cerr << "msg len " << msg.len << std::endl;
+		std::cerr << "packet size : " << packets[last - 1].data_size << std::endl;
+		std::cerr << "SHOw ________________"<<std::endl;
+		for (int i = 0; i < msg.len; i++)
+			std::cerr << msg.msg[i];
+		std::cerr << "___________________"<<std::endl;
+		write(fd, &(msg.msg), msg.len);
 	}
 
 	std::map<byte, bool> acks;
 
 	while (cur_seq_num < packets.size())
 	{
+		std::cerr << "wait for ack" << std::endl;
 		int len = recv(fd, buf, MAX_DATA_SIZE, 0);
-		if (len == EAGAIN)
+		if (len == -1)
 		{
+			std::cerr << "Time out" << std::endl;
 			send_packets(packets, cur_seq_num, window_size);
 			return;
 		}
 		std::vector<Packet> res = PacketTool::parse_packet(buf, len);
 		for (auto packet : res)
+		{
 			if (packet.type == ACK_TYPE)
+			{
 				acks[packet.seq_num] = true;
+				std::cerr << "ACK " << (int)packet.seq_num << " recived" << std::endl;
+			}
+				
+		}
+			
 
 		while (cur_seq_num < last)
 		{
@@ -122,6 +146,7 @@ void Host::send_packets(const std::vector<Packet>& packets, int cur_seq_num, int
 		while(last < std::min((int) packets.size(), cur_seq_num + window_size))
 		{
 			Msg msg(packets[last++]);
+			std::cerr << "Packet " << (int)packets[last-1].seq_num << " sent" << std::endl;
 			send(fd, &(msg.msg), msg.len, 0);
 		}
 	}
@@ -160,6 +185,7 @@ int main(int argc, char* argv[])
 		return 0;
 	}
 	std::string host_name(argv[1]);
+	byte shit = stoi(host_name);
 	Host host((byte)stoi(host_name));
 	host.run();
 	return 0;
