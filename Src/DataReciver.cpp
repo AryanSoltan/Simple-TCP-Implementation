@@ -1,4 +1,4 @@
-#include "../Includes/DataReciver.hpp"
+#include "DataReciver.hpp"
 
 DataReciver::DataReciver(byte recivers_name, byte senders_name)
 : recivers_name(recivers_name),

@@ -1,4 +1,4 @@
-#include "../Includes/Host.hpp"
+#include "Host.hpp"
 
 Host::Host(byte name)
 : name(name)
@@ -11,9 +11,9 @@ void Host::run()
 	fd = socket_tools.connect_to_server(PORT);
 	std::cout << "Connected to Router";
 	char buf[MAX_DATA_SIZE];
-	buf[0] = '0' + name;
+	buf[0] =  name;
 	buf[1] = 0;
-	write(fd, buf, 1);
+	write(fd, buf, 2);
 
 	fd_set master_set, working_set;
 	int max_fd = fd;
@@ -45,7 +45,9 @@ void Host::run()
 		{
 			read(STDIN_FILENO, buf, sizeof(buf));
 			std::string s_tmp(buf);
+			std::cout << "Start Reciving" << std::endl;
 			recive(s_tmp);
+			std::cout << "End of Reciving" << std::endl;
 		}
 	}
 }
@@ -67,7 +69,18 @@ void Host::send_data(std::string command)
 	std::ifstream file(path);
 	std::string contents((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
 	std::vector<Packet> packets = PacketTool::creat_packets(contents, packet_size, reciver, DATA_TYPE, name);
+
+	auto start = std::chrono::high_resolution_clock::now();
+
+	std::cout << "Start sending" << std::endl;
 	send_packets(packets, 0, window_size);
+	std::cout << "End of sending" << std::endl;
+
+	auto stop = std::chrono::high_resolution_clock::now();
+
+	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+
+	std::cout << "Execution time : " << duration.count() << " microseconds" << std::endl;
 }
 
 void Host::send_packets(const std::vector<Packet>& packets, int cur_seq_num, int window_size)
@@ -137,4 +150,17 @@ void Host::recive(std::string data)
 		Msg msg(pkt);
 		send(fd, msg.msg, msg.len, 0);
 	}
+}
+
+int main(int argc, char* argv[])
+{
+	if (argc != 2)
+	{
+		std::cout << "Wring number of Argumants for runnig Host" << std::endl;
+		return 0;
+	}
+	std::string host_name(argv[1]);
+	Host host((byte)stoi(host_name));
+	host.run();
+	return 0;
 }

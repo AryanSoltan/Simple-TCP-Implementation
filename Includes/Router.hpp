@@ -1,5 +1,5 @@
-#ifndef _PacketTool_hpp_
-#define _PacketTool_hpp
+#ifndef _Router_hpp_
+#define _Router_hpp_
 
 #include "IncludesAndDefines.hpp"
 #include "SocketTool.hpp"
