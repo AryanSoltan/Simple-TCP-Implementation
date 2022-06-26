@@ -10,7 +10,7 @@ senders_name(senders_name)
 
 int DataReciver::add_packet(Packet packet)
 {
-	if ((int)packet.seq_num > 256)
+	if ((int)packet.seq_num != seq_num)
 	{
 		int tmp_seq_num = seq_num;
 		int tmp_packet_seq_num = packet.seq_num;
@@ -26,6 +26,7 @@ int DataReciver::add_packet(Packet packet)
 		else 
 			return -1;
 	}
+	
 	
 	if (packet.data_size == 0)
 	{

@@ -1,4 +1,6 @@
 make all --print-data-base --no-builtin-variables --no-builtin-rules --question
+make: *** No rule to make target 'all'.  Stop.
+
 # GNU Make 4.2.1
 # Built for x86_64-pc-linux-gnu
 # Copyright (C) 1988-2016 Free Software Foundation, Inc.
@@ -6,7 +8,7 @@ make all --print-data-base --no-builtin-variables --no-builtin-rules --question
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Sun Jun 26 12:36:27 2022
+# Make data base, printed on Sun Jun 26 21:12:09 2022
 
 # Variables
 
@@ -51,7 +53,7 @@ VTE_VERSION = 6003
 # environment
 VSCODE_NLS_CONFIG = {"locale":"en-us","availableLanguages":{},"_languagePackSupport":true}
 # environment
-JOURNAL_STREAM = 8:49973
+JOURNAL_STREAM = 8:52414
 # environment
 XDG_CONFIG_DIRS = /etc/xdg/xdg-ubuntu:/etc/xdg
 # environment
@@ -71,11 +73,11 @@ MAKELEVEL := 0
 # environment
 XDG_DATA_DIRS = /usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop
 # environment
-DBUS_SESSION_BUS_ADDRESS = unix:path=/run/user/1000/bus,guid=ba926138cb90896b5838b31562b81126
+DBUS_SESSION_BUS_ADDRESS = unix:path=/run/user/1000/bus,guid=6a2635fdf71575a5ca8401aa62b87bf8
 # environment
 VSCODE_VERBOSE_LOGGING = true
 # environment
-MANAGERPID = 1878
+MANAGERPID = 1944
 # environment
 LESSOPEN = | /usr/bin/lesspipe %s
 # environment
@@ -95,7 +97,7 @@ src_dir = ./Src
 # environment
 GPG_AGENT_INFO = /run/user/1000/gnupg/S.gpg-agent:0:1
 # environment
-SESSION_MANAGER = local/aryan-UX303LB:@/tmp/.ICE-unix/2105,unix/aryan-UX303LB:/tmp/.ICE-unix/2105
+SESSION_MANAGER = local/aryan-UX303LB:@/tmp/.ICE-unix/2167,unix/aryan-UX303LB:/tmp/.ICE-unix/2167
 # environment
 XDG_RUNTIME_DIR = /run/user/1000
 # environment
@@ -115,7 +117,7 @@ DISABLE_WAYLAND = 1
 # environment
 ELECTRON_RUN_AS_NODE = 1
 # environment
-INVOCATION_ID = da0ff5c2a82f48a1aec27e3783170595
+INVOCATION_ID = 42438f293ecc47eeb5c7e0093667ea45
 # environment
 GDK_PIXBUF_MODULEDIR = /snap/code/99/usr/lib/x86_64-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders
 # default
@@ -141,7 +143,7 @@ PWD = /home/aryan/Desktop/University/online_courses/Semester6/Network/Projects/C
 # default
 .LOADED := 
 # environment
-SSH_AGENT_PID = 2069
+SSH_AGENT_PID = 2129
 # environment
 ORIGINAL_XDG_CURRENT_DESKTOP = ubuntu:GNOME
 # environment
@@ -201,7 +203,7 @@ SHLVL = 1
 # environment
 GNOME_SHELL_SESSION_MODE = ubuntu
 # environment
-VSCODE_IPC_HOOK_EXTHOST = /run/user/1000/vscode-ipc-0c80c36c-78c9-4d6c-805f-f42faa7dae05.sock
+VSCODE_IPC_HOOK_EXTHOST = /run/user/1000/vscode-ipc-66211151-5a52-4d2e-a1fb-6b192ed4f5cd.sock
 # default
 MAKE_VERSION := 4.2.1
 # environment
@@ -267,17 +269,14 @@ cc = g++
 # environment
 CONDA_PYTHON_EXE = /home/aryan/Desktop/home/aryan/anaconda3/bin/python
 # environment
-GNOME_TERMINAL_SCREEN = /org/gnome/Terminal/screen/fc12b62b_5076_442a_a488_e5c57aedb954
+GNOME_TERMINAL_SCREEN = /org/gnome/Terminal/screen/f51e914b_493d_4258_be59_98d4d8268f47
 # automatic
 ^F = $(notdir $^)
 # environment
-GNOME_TERMINAL_SERVICE = :1.102
+GNOME_TERMINAL_SERVICE = :1.117
 # default
 SUFFIXES := 
 # environment
- 
-make: *** No rule to make target 'all'.  Stop.
-
 SNAP_REEXEC = 
 # environment
 _CE_M = 
@@ -298,13 +297,14 @@ LANG = C
 # environment
 TERM = xterm-256color
 # environment
-VSCODE_PID = 4240
+VSCODE_PID = 5463
 # environment
-DBUS_STARTER_ADDRESS = unix:path=/run/user/1000/bus,guid=ba926138cb90896b5838b31562b81126
+DBUS_STARTER_ADDRESS = unix:path=/run/user/1000/bus,guid=6a2635fdf71575a5ca8401aa62b87bf8
 # environment
 _CE_CONDA = 
 # variable set hash-table stats:
 # Load=145/1024=14%, Rehash=0, Collisions=26/199=13%
+ 
 
 # Pattern-specific Variable Values
 
@@ -312,9 +312,9 @@ _CE_CONDA =
 
 # Directories
 
-# . (device 2050, inode 27663444): 14 files, no impossibilities.
+# . (device 2050, inode 27663444): 17 files, no impossibilities.
 
-# 14 files, no impossibilities in 1 directories.
+# 17 files, no impossibilities in 1 directories.
 
 # Implicit Rules
 
@@ -465,12 +465,12 @@ All: Router Host
 
 # No general ('VPATH' variable) search path.
 
-# strcache buffers: 1 (0) / strings = 37 / storage = 456 B / avg = 12 B
-# current buf: size = 8162 B / used = 456 B / count = 37 / avg = 12 B
+# strcache buffers: 1 (0) / strings = 40 / storage = 494 B / avg = 12 B
+# current buf: size = 8162 B / used = 494 B / count = 40 / avg = 12 B
 
-# strcache performance: lookups = 67 / hit rate = 44%
+# strcache performance: lookups = 70 / hit rate = 42%
 # hash-table stats:
-# Load=37/8192=0%, Rehash=0, Collisions=4/67=6%
-# Finished Make data base on Sun Jun 26 12:36:27 2022
+# Load=40/8192=0%, Rehash=0, Collisions=4/70=6%
+# Finished Make data base on Sun Jun 26 21:12:09 2022
 
  

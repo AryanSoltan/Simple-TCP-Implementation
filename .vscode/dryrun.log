@@ -4,6 +4,7 @@ g++ -std=c++11 -pthread -c -I ./Includes ./Src/Router.cpp -o ./Build/Router.o
 g++ -std=c++11 -pthread -c -I ./Includes ./Src/PacketTool.cpp -o ./Build/PacketTool.o
 g++ -std=c++11 -pthread -c -I ./Includes ./Src/SocketTool.cpp -o ./Build/SocketTool.o
 g++ -std=c++11 -pthread ./Build/Router.o ./Build/PacketTool.o ./Build/SocketTool.o -o Router.out
+ 
 g++ -std=c++11 -pthread -c -I ./Includes ./Src/Host.cpp -o ./Build/Host.o
 g++ -std=c++11 -pthread -c -I ./Includes ./Src/DataReciver.cpp -o ./Build/DataReciver.o
 g++ -std=c++11 -pthread ./Build/Host.o ./Build/SocketTool.o ./Build/PacketTool.o ./Build/DataReciver.o -o Host.out
