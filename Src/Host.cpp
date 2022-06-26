@@ -1,4 +1,4 @@
-#include "Host.hpp"
+#include "../Includes/Host.hpp"
 
 Host::Host(byte name)
 : name(name)
@@ -23,8 +23,8 @@ void Host::run()
 	FD_SET(STDIN_FILENO, &master_set);
 
 	struct timeval t;
-	t.tv_sec = 2;
-	t.tv_usec = 0;
+	t.tv_sec = 3;
+	// t.tv_usec = 0;
 
 	while (true)
 	{
@@ -38,13 +38,23 @@ void Host::run()
 		if (FD_ISSET(STDIN_FILENO, &working_set))
 		{
 			read(STDIN_FILENO, buf, sizeof(buf));
-			// printf("%s", buf);
 			std::string s_tmp(buf);
 			send_data(s_tmp);
 		}
 		else 
 		{
-			recv(fd, buf, 1024, 0);
+
+			int msg_size = recv(fd, buf, 1024, 0);
+			buf[msg_size] = '\n';
+
+			std::cerr << "A packet recieved..." << std::endl;
+			std::cerr << "msg length : " << msg_size << std::endl;
+			std::cerr << "char first packet : reciver, sender: " <<  (byte)buf[0] << " " <<  (byte)buf[2] << " " << std::endl;
+			std::cerr <<"show________________" << std::endl;
+			for (int i = 0; i < msg_size; i++)
+				std::cerr << buf[i];
+			std::cerr <<"______________________" << std::endl;
+
 			std::string s_tmp(buf);
 			std::cout << "__________\n" << s_tmp.size() << std::endl << s_tmp<<std::endl << "_________________\n";
 			std::cout << "Start Reciving" << std::endl;
@@ -66,7 +76,7 @@ void Host::send_data(std::string command)
 	reciver = tmp;
 
 	struct timeval tv;
-	tv.tv_sec = 1;
+	tv.tv_sec = 3;
 	tv.tv_usec = 0;
 	setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
 
@@ -93,22 +103,6 @@ void Host::send_packets(const std::vector<Packet>& packets, int cur_seq_num, int
 {
 	int last = cur_seq_num;
 	char buf[MAX_DATA_SIZE];
-	while(last < std::min((int) packets.size(), cur_seq_num + window_size))
-	{
-		Msg msg(packets[last++]);
-		std::cerr << "Packet " << (int)packets[last-1].seq_num << " sent" << std::endl;
-		std::cerr <<"sender, reciver, seqnum: " << (char)packets[last-1].sender << " " << (char)packets[last-1].reciver << " " << (char)packets[last-1].seq_num << std::endl;
-		std::cerr << "msg sender reciver : " <<  (char)msg.msg[2] << " " << (char)msg.msg[0] << std::endl;
-		std::cerr << "msg len " << msg.len << std::endl;
-		std::cerr << "packet size : " << packets[last - 1].data_size << std::endl;
-		std::cerr << "SHOw ________________"<<std::endl;
-		for (int i = 0; i < msg.len; i++)
-			std::cerr << msg.msg[i];
-		std::cerr << "___________________"<<std::endl;
-		// write(fd, &(msg.msg), msg.len);
-	}
-
-	last = cur_seq_num;
 
 	std::map<byte, bool> acks;
 
@@ -117,12 +111,20 @@ void Host::send_packets(const std::vector<Packet>& packets, int cur_seq_num, int
 		while(last < std::min((int) packets.size(), cur_seq_num + window_size))
 		{
 			Msg msg(packets[last++]);
+			send(fd, msg.msg, msg.len, 0);
 			std::cerr << "Packet " << (int)packets[last-1].seq_num << " sent" << std::endl;
 			std::cerr <<"sender, reciver, seqnum: " << (char)packets[last-1].sender << " " << (char)packets[last-1].reciver << " " << (char)packets[last-1].seq_num << std::endl;
-			send(fd, msg.msg, msg.len, 0);
+			std::cerr << "msg sender reciver : " <<  (char)msg.msg[2] << " " << (char)msg.msg[0] << std::endl;
+			std::cerr << "msg len " << msg.len << std::endl;
+			std::cerr << "packet size : " << packets[last - 1].data_size << std::endl;
+			std::cerr << "SHOw ________________"<<std::endl;
+			for (int i = 0; i < msg.len; i++)
+				std::cerr << msg.msg[i];
+			std::cerr << "___________________"<<std::endl;
 		}
 
 		std::cerr << "wait for ack" << std::endl;
+		
 		int len = recv(fd, buf, MAX_DATA_SIZE, 0);
 		if (len == -1)
 		{
@@ -175,6 +177,8 @@ void Host::recive(std::string data)
 			continue;
 		byte ret = (ack % 256);
 		Packet pkt(packet.sender, ACK_TYPE, packet.reciver, ret);
+		std::cerr << "Sending ACK... " << " " << "sender: " << " " << packet.reciver << " " << "reciever " 
+			<< packet.sender << std::endl; 
 		Msg msg(pkt);
 		send(fd, msg.msg, msg.len, 0);
 	}

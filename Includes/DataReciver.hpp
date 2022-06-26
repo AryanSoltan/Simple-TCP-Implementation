@@ -9,7 +9,7 @@ class DataReciver
 		byte recivers_name;
 		byte senders_name;
 		std::string recived_data;
-		byte seq_num;
+		int seq_num;
 		int file_number;
 		
 	public:

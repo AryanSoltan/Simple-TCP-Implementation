@@ -130,7 +130,7 @@ void Router::run_recv_thread()
 					}
 					else 
 					{
-						std::cerr << "msg lenght : " << msg_size << std::endl;
+						std::cerr << "msg length : " << msg_size << std::endl;
 						std::cerr << "char first packet : reciver, sender: " <<  (byte)buf[0] << " " <<  (byte)buf[2] << " " << std::endl;
 						std::cerr <<"show________________" << std::endl;
 						for (int i = 0; i < msg_size; i++)
