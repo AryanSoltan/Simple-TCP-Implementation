@@ -9,11 +9,10 @@ void Host::run()
 {
 	SocketTools socket_tools;
 	fd = socket_tools.connect_to_server(PORT);
-	std::cout << "Connected to Router" << std::endl;
 	char buf[MAX_DATA_SIZE];
 	buf[0] =  name;
 	buf[1] = 0;
-	write(fd, buf, 2);
+	send(fd, &buf, 2, 0);
 
 	fd_set master_set, working_set;
 	int max_fd = fd;
@@ -39,12 +38,13 @@ void Host::run()
 		if (FD_ISSET(STDIN_FILENO, &working_set))
 		{
 			read(STDIN_FILENO, buf, sizeof(buf));
+			// printf("%s", buf);
 			std::string s_tmp(buf);
 			send_data(s_tmp);
 		}
 		else 
 		{
-			read(fd, buf, sizeof(buf));
+			recv(fd, buf, 1024, 0);
 			std::string s_tmp(buf);
 			std::cout << "__________\n" << s_tmp.size() << std::endl << s_tmp<<std::endl << "_________________\n";
 			std::cout << "Start Reciving" << std::endl;
@@ -57,7 +57,7 @@ void Host::run()
 void Host::send_data(std::string command)
 {
 	std::string path;
-	int tmp;
+	byte tmp;
 	byte reciver;
 	int window_size;
 	int packet_size;
@@ -97,21 +97,31 @@ void Host::send_packets(const std::vector<Packet>& packets, int cur_seq_num, int
 	{
 		Msg msg(packets[last++]);
 		std::cerr << "Packet " << (int)packets[last-1].seq_num << " sent" << std::endl;
-		std::cerr <<"sender, reciver, seqnum: " << (int)packets[last-1].sender << " " << (int)packets[last-1].reciver << " " << (int)packets[last-1].seq_num << std::endl;
-		std::cerr << "msg sender reciver : " <<  (int)msg.msg[2] << " " << (int)msg.msg[0] << std::endl;
+		std::cerr <<"sender, reciver, seqnum: " << (char)packets[last-1].sender << " " << (char)packets[last-1].reciver << " " << (char)packets[last-1].seq_num << std::endl;
+		std::cerr << "msg sender reciver : " <<  (char)msg.msg[2] << " " << (char)msg.msg[0] << std::endl;
 		std::cerr << "msg len " << msg.len << std::endl;
 		std::cerr << "packet size : " << packets[last - 1].data_size << std::endl;
 		std::cerr << "SHOw ________________"<<std::endl;
 		for (int i = 0; i < msg.len; i++)
 			std::cerr << msg.msg[i];
 		std::cerr << "___________________"<<std::endl;
-		write(fd, &(msg.msg), msg.len);
+		// write(fd, &(msg.msg), msg.len);
 	}
+
+	last = cur_seq_num;
 
 	std::map<byte, bool> acks;
 
 	while (cur_seq_num < packets.size())
 	{
+		while(last < std::min((int) packets.size(), cur_seq_num + window_size))
+		{
+			Msg msg(packets[last++]);
+			std::cerr << "Packet " << (int)packets[last-1].seq_num << " sent" << std::endl;
+			std::cerr <<"sender, reciver, seqnum: " << (char)packets[last-1].sender << " " << (char)packets[last-1].reciver << " " << (char)packets[last-1].seq_num << std::endl;
+			send(fd, msg.msg, msg.len, 0);
+		}
+
 		std::cerr << "wait for ack" << std::endl;
 		int len = recv(fd, buf, MAX_DATA_SIZE, 0);
 		if (len == -1)
@@ -142,13 +152,6 @@ void Host::send_packets(const std::vector<Packet>& packets, int cur_seq_num, int
 			else
 				break;
 		}
-
-		while(last < std::min((int) packets.size(), cur_seq_num + window_size))
-		{
-			Msg msg(packets[last++]);
-			std::cerr << "Packet " << (int)packets[last-1].seq_num << " sent" << std::endl;
-			send(fd, &(msg.msg), msg.len, 0);
-		}
 	}
 }
 
@@ -177,16 +180,19 @@ void Host::recive(std::string data)
 	}
 }
 
+Host::~Host()
+{
+	close(fd);
+}
+
 int main(int argc, char* argv[])
 {
 	if (argc != 2)
 	{
-		std::cout << "Wring number of Argumants for runnig Host" << std::endl;
+		std::cout << "Please write the number of Arguemants for the running Host" << std::endl;
 		return 0;
 	}
-	std::string host_name(argv[1]);
-	byte shit = stoi(host_name);
-	Host host((byte)stoi(host_name));
-	host.run();
+	Host* host = new Host((byte)argv[1][0]);
+	host->run();
 	return 0;
 }

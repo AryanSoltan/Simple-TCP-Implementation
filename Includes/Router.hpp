@@ -13,6 +13,8 @@ class Router
         void run_all();
 		void run_recv_thread();
 		void run_send_thread();
+		~Router ();
+
     private: 
 
         void add_new_packets(std::vector<Packet> new_packets);

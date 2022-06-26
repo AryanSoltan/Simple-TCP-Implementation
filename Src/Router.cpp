@@ -1,6 +1,6 @@
-#include "Router.hpp"
+#include "../Includes/Router.hpp"
 
-#define LEN_PACKET 1024
+#define LEN_PACKET 2048
 
 Router::Router(int len_input)
 {
@@ -74,7 +74,6 @@ void Router::add_new_packets(std::vector<Packet> new_packets)
 void Router::run_recv_thread()
 {
 	fd_set master_set, working_set;
-	char buf[LEN_PACKET];
 
 	int max_fd = router_fd;
 
@@ -83,6 +82,7 @@ void Router::run_recv_thread()
 
 	while(true)
 	{
+		char buf[MAX_DATA_SIZE];
 		working_set = master_set;
 		if (select(max_fd + 1, &working_set, NULL, NULL, NULL) == -1)
 		{
@@ -106,7 +106,7 @@ void Router::run_recv_thread()
 			{
 				if (!FD_ISSET(hosts[i], &working_set))
 					continue;
-				int msg_size = recv(hosts[i], &buf, sizeof(buf), 0);
+				int msg_size = recv(hosts[i], buf, LEN_PACKET, 0);
 				if(msg_size <= 0)
 				{
 					if(msg_size < 0)
@@ -115,6 +115,7 @@ void Router::run_recv_thread()
 					{
 						std::cout << "A client quits" << std::endl;
 						FD_CLR(hosts[i], &master_set);
+						number_messages_from_host[i] = 0;
 						close(hosts[i]);
 						hosts.pop_back();
 					}
@@ -125,11 +126,12 @@ void Router::run_recv_thread()
 					if(!number_messages_from_host[i])
 					{
 						name_host[i] = buf[0];
+						std::cerr << "New Host name is " << buf[0] << std::endl;
 					}
 					else 
 					{
 						std::cerr << "msg lenght : " << msg_size << std::endl;
-						std::cerr << "int first packet : reciver, sender: " <<  (int)(int)(unsigned)buf[0] << " " <<  (int)(unsigned char)buf[2] << " " << std::endl;
+						std::cerr << "char first packet : reciver, sender: " <<  (byte)buf[0] << " " <<  (byte)buf[2] << " " << std::endl;
 						std::cerr <<"show________________" << std::endl;
 						for (int i = 0; i < msg_size; i++)
 							std::cerr << buf[i];
@@ -156,15 +158,24 @@ void Router::run_all()
 	thread2.join();
 }
 
+Router::~Router ()
+{
+	for(int i = 0; i < hosts.size(); i++)
+	{
+		close(hosts[i]);
+	}
+	close(router_fd);
+}
+
 int main(int argc, char* argv[])
 {
 	if (argc != 2)
 	{
-		std::cout << "Wring number of Argumants for runnig Router" << std::endl;
+		std::cout << "Wring number of Argumants for running Router" << std::endl;
 		return 0;
 	}
 	std::string queue_size(argv[1]);
-
-	Router router(stoi(queue_size));
-	router.run_all();
+	Router* router = new Router(stoi(queue_size));
+	router->run_all();
+	delete router;
 }

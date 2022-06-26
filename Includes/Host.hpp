@@ -13,7 +13,7 @@ class Host
 		void recive(std::string data);
 		void send_data(std::string command);
 		void send_packets(const std::vector<Packet>& packets, int l, int window_size);
-
+		~Host();
 	private:
 		byte name;
 		HostState state;
