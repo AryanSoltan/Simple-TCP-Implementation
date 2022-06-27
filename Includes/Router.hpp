@@ -15,7 +15,7 @@ class Router
 		void run_send_thread();
 		~Router ();
 
-    private: 
+    protected: 
 
         void add_new_packets(std::vector<Packet> new_packets);
         int accept_new_request(int master_socket);
@@ -27,6 +27,23 @@ class Router
 		std::vector<int>number_messages_from_host;
 		byte name_host[MAX_CONNECTIONS];
 		std::queue<Packet> router_queue;
+};
+
+class RouterRed: Router 
+{
+	public:
+		RouterRed(int len_input);
+		void run_red();
+	private:
+		void run_send_thread_red();
+		void run_recv_thread_red();
+		double calculate_new_probablility();
+		void add_new_packets_red(std::vector<Packet> new_packets);
+		void calculate_avg();
+		double new_avg;
+		double w_q;
+		double min_th;
+		double max_th;
 };
 
 #endif
