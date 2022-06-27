@@ -68,7 +68,8 @@ void Router::add_new_packets(std::vector<Packet> new_packets)
 	for(auto packet : new_packets)
 	{
 		mtx.lock();
-		if (router_queue.size() < len_queue)
+		int tmp = rand() % 10;
+		if (router_queue.size() < len_queue && tmp != 0)
 		{
 			Msg msg(packet);
 			router_queue.push(packet);
@@ -320,6 +321,7 @@ void RouterRed::run_red()
 
 int main(int argc, char* argv[])
 {
+	srand(time(0));
 	if (argc != 3)
 	{
 		std::cout << "Wrong number of Argumants for running Router" << std::endl;

@@ -34,6 +34,7 @@ Msg::Msg (Packet packet)
 		msg[cnt++] = packet.data[i];
 	}
 	msg[cnt] = 0;
+	// std::cerr << msg << " BEBINAM " << std::endl;
 }
 
 Msg::~Msg ()
@@ -61,6 +62,7 @@ Packet PacketTool::get_top_packet(char msg[], int& cur_index, int len)
 		else
 			packet.data[packet.data_size++] = msg[cur_index++];
 	}
+	packet.data[packet.data_size] = 0;
 	return packet;
 }
 
