@@ -69,7 +69,10 @@ std::vector<Packet> PacketTool::parse_packet(char msg[], int len)
 	int cur_index = 0;
 	std::vector<Packet> packets;
 	while (cur_index < len)
+	{
 		packets.push_back(get_top_packet(msg, cur_index, len));
+	}
+		
 	return packets;
 }
 
@@ -84,9 +87,10 @@ std::vector<Packet> PacketTool::creat_packets(std::string data, int packet_size,
 
 std::vector<Packet> PacketTool::parse_packet(std::string data)
 {
-	int len = data.size() + 1;
+	int len = data.size();
 	char chr[len];
-	std::strcpy(chr, data.c_str());
+	for (int i = 0; i < data.size(); i++)
+		chr[i] = data[i];
 	return parse_packet(chr, len);
 }
 

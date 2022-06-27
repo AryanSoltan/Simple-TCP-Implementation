@@ -2,6 +2,8 @@
 
 #define LEN_PACKET 2048
 
+std::mutex mtx;
+
 Router::Router(int len_input)
 {
 	len_queue = len_input;
@@ -28,6 +30,7 @@ void Router::run_send_thread()
 {
 	while(true)
 	{
+		mtx.lock();
 		if(router_queue.size())
 		{
 			Packet packet = router_queue.front();
@@ -37,6 +40,7 @@ void Router::run_send_thread()
 			Msg msg(packet);
 			send(fd_need, msg.msg, msg.len, 0);
 		}
+		mtx.unlock();
 	}	
 }
 
@@ -63,11 +67,13 @@ void Router::add_new_packets(std::vector<Packet> new_packets)
 {
 	for(auto packet : new_packets)
 	{
+		mtx.lock();
 		if (router_queue.size() < len_queue)
 		{
-			std::cerr << "Packet added, sender, reciver, seqnum : "<< (int)packet.sender <<" " <<(int)packet.reciver <<" " <<(int)packet.seq_num<<std::endl;
+			Msg msg(packet);
 			router_queue.push(packet);
 		}
+		mtx.unlock();
 	}
 }
 
@@ -106,7 +112,9 @@ void Router::run_recv_thread()
 			{
 				if (!FD_ISSET(hosts[i], &working_set))
 					continue;
+				mtx.lock();
 				int msg_size = recv(hosts[i], buf, LEN_PACKET, 0);
+				mtx.unlock();
 				if(msg_size <= 0)
 				{
 					if(msg_size < 0)
@@ -126,17 +134,10 @@ void Router::run_recv_thread()
 					if(!number_messages_from_host[i])
 					{
 						name_host[i] = buf[0];
-						std::cerr << "New Host name is " << buf[0] << std::endl;
+						std::cout << "New Host name is " << buf[0] << std::endl;
 					}
 					else 
 					{
-						std::cerr << "msg length : " << msg_size << std::endl;
-						std::cerr << "char first packet : reciver, sender: " <<  (byte)buf[0] << " " <<  (byte)buf[2] << " " << std::endl;
-						std::cerr <<"show________________" << std::endl;
-						for (int i = 0; i < msg_size; i++)
-							std::cerr << buf[i];
-						std::cerr <<"______________________" << std::endl;
-						
 						std:: vector<Packet> new_packets = PacketTool::parse_packet(buf, msg_size);
 						add_new_packets(new_packets);
 					}

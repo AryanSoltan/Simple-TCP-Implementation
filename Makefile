@@ -28,4 +28,5 @@ ${build_dir}/DataReciver.o: ${inc_dir}/IncludesAndDefines.hpp ${inc_dir}/DataRec
 	${cc} ${cfalgs} -c -I ${inc_dir} ${src_dir}/DataReciver.cpp -o ${build_dir}/DataReciver.o
 
 clear:
-	rm Client.out Server.out ${build_dir}/*
+	rm Host.out Router.out ${build_dir}/*
+	rm files/*
