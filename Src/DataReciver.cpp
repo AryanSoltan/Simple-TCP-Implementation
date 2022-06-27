@@ -35,6 +35,7 @@ int DataReciver::add_packet(Packet packet)
 	seq_num %= 256;
 	if (packet.data_size == 0)
 	{
+		std::cout << "recive completed" << std::endl;
 		std::ofstream file("files/from " + std::to_string(senders_name) + " to " + std::to_string(recivers_name)
 				+ std::to_string(file_number));
 		file << recived_data;
