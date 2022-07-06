@@ -68,8 +68,8 @@ void Router::add_new_packets(std::vector<Packet> new_packets)
 	for(auto packet : new_packets)
 	{
 		mtx.lock();
-		int tmp = rand() % 10;
-		if (router_queue.size() < len_queue && tmp != 0)
+		// int tmp = rand() % 10;
+		if (router_queue.size() < len_queue)
 		{
 			Msg msg(packet);
 			router_queue.push(packet);
@@ -102,7 +102,7 @@ void RouterRed::add_new_packets_red(std::vector<Packet> new_packets)
 	{
 		double prob = calculate_new_probablility();
 		std::cerr << "Probability for packet is: " << prob << std::endl;
-		std::cerr << "Average packet is: " << new_avg << std::endl;
+		std::cerr << "Average packet size is: " << new_avg << std::endl;
 		if(prob > 0.5)
 		{
 			std::cerr << "From Router packet sent " << std::endl;
@@ -151,7 +151,9 @@ void RouterRed::run_recv_thread_red()
 			{
 				if (!FD_ISSET(hosts[i], &working_set))
 					continue;
+				mtx.lock();
 				int msg_size = recv(hosts[i], buf, LEN_PACKET, 0);
+				mtx.unlock();
 				if(msg_size <= 0)
 				{
 					if(msg_size < 0)
@@ -175,12 +177,6 @@ void RouterRed::run_recv_thread_red()
 					}
 					else 
 					{
-						std::cerr << "msg length : " << msg_size << std::endl;
-						std::cerr << "char first packet : reciver, sender: " <<  (byte)buf[0] << " " <<  (byte)buf[2] << " " << std::endl;
-						std::cerr <<"show________________" << std::endl;
-						for (int i = 0; i < msg_size; i++)
-							std::cerr << buf[i];
-						std::cerr <<"______________________" << std::endl;
 						
 						std:: vector<Packet> new_packets = PacketTool::parse_packet(buf, msg_size);
 						add_new_packets_red(new_packets);
@@ -295,6 +291,7 @@ void RouterRed::run_send_thread_red()
 {
 	while(true)
 	{
+	    mtx.lock();
 		if(router_queue.size())
 		{
 			Packet packet = router_queue.front();
@@ -304,6 +301,7 @@ void RouterRed::run_send_thread_red()
 			Msg msg(packet);
 			send(fd_need, msg.msg, msg.len, 0);
 		}
+		mtx.unlock();
 	}	
 }	
 
