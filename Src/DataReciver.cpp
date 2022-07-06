@@ -37,7 +37,7 @@ int DataReciver::add_packet(Packet packet)
 	{
 		std::cout << "recive completed" << std::endl;
 		std::ofstream file("files/from " + std::to_string(senders_name) + " to " + std::to_string(recivers_name)
-				+ std::to_string(file_number));
+				+ std::to_string(file_number) + ".txt");
 		file << recived_data;
 		file_number++;
 		recived_data = "";

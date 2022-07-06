@@ -1,20 +1,28 @@
 #include "../Includes/Host.hpp"
 
 bool flag;
+std::mutex mtx2;
 
 Host::Host(byte name)
 : name(name)
 {
 }
 
-void Host::run()
+void Host::connect_to_router()
 {
 	SocketTools socket_tools;
 	fd = socket_tools.connect_to_server(PORT);
 	char buf[MAX_DATA_SIZE];
 	buf[0] =  name;
 	buf[1] = 0;
+	mtx2.lock();
 	send(fd, &buf, 2, 0);
+	mtx2.unlock();
+}
+
+void Host::run()
+{
+	char buf[MAX_DATA_SIZE];
 
 	fd_set master_set, working_set;
 	int max_fd = fd;
@@ -46,14 +54,20 @@ void Host::run()
 				strcpy(buf, "./huge_file.txt d 10 1500");	
 			}
 			else
+			{
+				mtx2.lock();
 				read(STDIN_FILENO, buf, sizeof(buf));
+				mtx2.unlock();
+			}
+				
 			std::string s_tmp(buf);
 			send_data(s_tmp);
 		}
 		else 
 		{
-
+			mtx2.lock();
 			int msg_size = recv(fd, buf, 1024, 0);
+			mtx2.unlock();
 
 			std::string s_tmp;
 			for (int i = 0; i < msg_size; i++)
@@ -117,10 +131,14 @@ void Host::send_packets(const std::vector<Packet>& packets, int cur_seq_num, int
 			Packet pkt = packets[last-1];
 			std::cerr << "Packet is sending: sender reciver seqnum: " << msg.msg[2] << " " << msg.msg[0] << " " << int(msg.msg[3])
 					<< std::endl;
+			mtx2.lock();
 			send(fd, msg.msg, msg.len, 0);
+			mtx2.unlock();
 		}
-		
+		mtx2.lock();
 		int len = recv(fd, buf, MAX_DATA_SIZE, 0);
+		mtx2.unlock();
+
 		if (len == -1)
 		{
 			send_packets(packets, cur_seq_num, window_size);
@@ -172,7 +190,9 @@ void Host::recive(std::string data)
 		Msg msg(pkt);
 		std::cerr << "Ack is sending: sender reciver seq_num: " << msg.msg[2] << " " << msg.msg[0] << " " << int(msg.msg[3])
 					<< std::endl;
+		mtx2.lock();
 		send(fd, msg.msg, msg.len, 0);
+		mtx2.unlock();
 	}
 }
 
@@ -192,7 +212,32 @@ int main(int argc, char* argv[])
 	{
 		flag = 1;
 	}
-	Host* host = new Host((byte)argv[1][0]);
-	host->run();
-	return 0;
+	if (argv[1][0] != 'a')
+	{
+		Host* host = new Host((byte)argv[1][0]);
+		host->connect_to_router();
+		host->run();
+		return 0;
+	}
+	else
+	{
+		char tmp_name = (byte)argv[1][0];
+		std::vector<std::thread*> threads;
+		for (int i = 0; i < 19; i++)
+		{
+			Host* host = new Host(tmp_name++);
+			std::thread* threadi = new std::thread(&Host::run_for_red, host);
+			threads.push_back(threadi);
+		}
+		for (int i = 0; i < threads.size(); i++)
+			threads[i]->join();
+
+	}
+
+}
+
+void Host::run_for_red()
+{
+	this->connect_to_router();
+	this->send_data("huge_file.txt B 10 1500");
 }

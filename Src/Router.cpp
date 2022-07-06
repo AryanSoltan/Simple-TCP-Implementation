@@ -69,11 +69,14 @@ void Router::add_new_packets(std::vector<Packet> new_packets)
 	{
 		mtx.lock();
 		// int tmp = rand() % 10;
-		if (router_queue.size() < len_queue)
-		{
-			Msg msg(packet);
-			router_queue.push(packet);
-		}
+		// if (tmp)
+		// {
+			if (router_queue.size() < len_queue)
+			{
+				Msg msg(packet);
+				router_queue.push(packet);
+			}
+		// }
 		mtx.unlock();
 	}
 }
@@ -101,12 +104,15 @@ void RouterRed::add_new_packets_red(std::vector<Packet> new_packets)
 	for(auto packet : new_packets)
 	{
 		double prob = calculate_new_probablility();
+
 		std::cerr << "Probability for packet is: " << prob << std::endl;
 		std::cerr << "Average packet size is: " << new_avg << std::endl;
 		if(prob > 0.5)
 		{
 			std::cerr << "From Router packet sent " << std::endl;
+			mtx.lock();
 			router_queue.push(packet);
+			mtx.unlock();
 		}
 		else 
 		{

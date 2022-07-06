@@ -13,6 +13,8 @@ class Host
 		void recive(std::string data);
 		void send_data(std::string command);
 		void send_packets(const std::vector<Packet>& packets, int l, int window_size);
+		void connect_to_router();
+		void run_for_red();
 		~Host();
 	private:
 		byte name;
