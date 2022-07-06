@@ -106,6 +106,8 @@ void Host::send_packets(const std::vector<Packet>& packets, int cur_seq_num, int
 		{
 			Msg msg(packets[last++]);
 			Packet pkt = packets[last-1];
+			std::cerr << "Packet is sending: sender reciver seqnum: " << msg.msg[2] << " " << msg.msg[0] << " " << int(msg.msg[3])
+					<< std::endl;
 			send(fd, msg.msg, msg.len, 0);
 		}
 		
@@ -159,6 +161,8 @@ void Host::recive(std::string data)
 		byte ret = (ack % 256);
 		Packet pkt(packet.sender, ACK_TYPE, packet.reciver, ret); 
 		Msg msg(pkt);
+		std::cerr << "Ack is sending: sender reciver seq_num: " << msg.msg[2] << " " << msg.msg[0] << " " << int(msg.msg[3])
+					<< std::endl;
 		send(fd, msg.msg, msg.len, 0);
 	}
 }

@@ -30,7 +30,7 @@
 #define DATA_BUF_SIZE 100000
 #define MAX_DATA_SIZE 16384
 #define MAX_CONNECTIONS 40
-#define PORT 8039
+#define PORT 8042
 #define ACK_TYPE 0
 #define DATA_TYPE 1
 
