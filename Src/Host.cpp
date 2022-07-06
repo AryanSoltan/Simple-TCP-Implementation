@@ -1,5 +1,7 @@
 #include "../Includes/Host.hpp"
 
+bool flag;
+
 Host::Host(byte name)
 : name(name)
 {
@@ -35,9 +37,16 @@ void Host::run()
 			return;
 		}
 
-		if (FD_ISSET(STDIN_FILENO, &working_set))
+		if (FD_ISSET(STDIN_FILENO, &working_set) || flag == 1)
 		{
-			read(STDIN_FILENO, buf, sizeof(buf));
+			if(flag)
+			{
+				if(name == 'd')
+					continue;
+				strcpy(buf, "./huge_file.txt d 10 1500");	
+			}
+			else
+				read(STDIN_FILENO, buf, sizeof(buf));
 			std::string s_tmp(buf);
 			send_data(s_tmp);
 		}
@@ -174,10 +183,14 @@ Host::~Host()
 
 int main(int argc, char* argv[])
 {
-	if (argc != 2)
+	if (argc != 2 && argc != 3)
 	{
 		std::cout << "Please write the number of Arguemants for the running Host" << std::endl;
 		return 0;
+	}
+	if(argc == 3)
+	{
+		flag = 1;
 	}
 	Host* host = new Host((byte)argv[1][0]);
 	host->run();
