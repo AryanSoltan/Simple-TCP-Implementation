@@ -68,15 +68,15 @@ void Router::add_new_packets(std::vector<Packet> new_packets)
 	for(auto packet : new_packets)
 	{
 		mtx.lock();
-		// int tmp = rand() % 10;
-		// if (tmp)
-		// {
+		int tmp = rand() % 10;
+		if (tmp)
+		{
 			if (router_queue.size() < len_queue)
 			{
 				Msg msg(packet);
 				router_queue.push(packet);
 			}
-		// }
+		}
 		mtx.unlock();
 	}
 }

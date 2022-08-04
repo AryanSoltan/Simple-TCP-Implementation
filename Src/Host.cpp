@@ -239,5 +239,5 @@ int main(int argc, char* argv[])
 void Host::run_for_red()
 {
 	this->connect_to_router();
-	this->send_data("huge_file.txt B 10 1500");
+	this->send_data("test.txt B 10 1500");
 }
